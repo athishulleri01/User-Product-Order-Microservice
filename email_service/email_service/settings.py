@@ -122,3 +122,13 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+# RabbitMQ broker settings
+RABBITMQ_USER = 'owwaxfoi'
+RABBITMQ_PASSWORD = 'pgTKR8wdI0MEd-DUWnYJZhdCSHxNhLj9'
+RABBITMQ_HOST = 'armadillo.rmq.cloudamqp.com'
+RABBITMQ_PORT = 5672
+RABBITMQ_VHOST = 'owwaxfoi'  # The virtual host you are using
+
+# Celery configuration
+CELERY_BROKER_URL = f'amqp://{RABBITMQ_USER}:{RABBITMQ_PASSWORD}@{RABBITMQ_HOST}:{RABBITMQ_PORT}/{RABBITMQ_VHOST}'
+CELERY_RESULT_BACKEND = 'rpc://'

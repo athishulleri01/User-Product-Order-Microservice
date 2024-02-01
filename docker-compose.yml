@@ -1,0 +1,99 @@
+# docker-compose.yml
+version: '3'
+
+services:
+  rabbitmq:
+    image: "rabbitmq:management"
+    hostname: "armadillo-01.rmq.cloudamqp.com"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "owwaxfoi"
+      RABBITMQ_DEFAULT_PASS: "pgTKR8wdI0MEd-DUWnYJZhdCSHxNhLj9"
+    networks:
+      - mynetwork
+
+  postgres_user:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: user_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - mynetwork
+
+  postgres_order:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: order_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - mynetwork
+
+  postgres_product:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: product_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      - mynetwork
+
+  user_service:
+    build: ./user_service
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      - rabbitmq
+      - postgres_user
+    links:
+      - rabbitmq:rabbitmq
+    networks:
+      - mynetwork
+
+  order_service:
+    build: ./order_service
+    command: python manage.py runserver 0.0.0.0:8001
+    ports:
+      - "8001:8001"
+    depends_on:
+      - rabbitmq
+      - postgres_order
+    links:
+      - rabbitmq:rabbitmq
+    networks:
+      - mynetwork
+
+  email_service:
+    build: ./email_service
+    command: python manage.py runserver 0.0.0.0:8001
+    ports:
+      - "8003:8001"
+    depends_on:
+      - rabbitmq
+    links:
+    - rabbitmq:rabbitmq
+    networks:
+        - mynetwork
+      
+
+  product_service:
+    build: ./product_service
+    command: python manage.py runserver 0.0.0.0:8001
+    ports:
+      - "8002:8001"
+    depends_on:
+      - rabbitmq
+      - user_service
+      - order_service
+      - email_service
+    links:
+      - rabbitmq:rabbitmq
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:

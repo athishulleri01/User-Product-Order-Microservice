@@ -1,0 +1,27 @@
+# user_service/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      labels:
+        app: product-service
+    spec:
+      containers:
+      - name: product-service
+        image: athishulleri/product-service:latest
+        ports:
+        - containerPort: 8002
+        env:
+        - name: POSTGRES_DB
+          value: product_service
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres

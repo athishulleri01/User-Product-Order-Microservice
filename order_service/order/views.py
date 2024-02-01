@@ -1,9 +1,9 @@
 from rest_framework import generics, serializers
 from rest_framework.response import Response
-from .models import Order, User
+from .models import Order, User,Product
 from .serializers import OrderSerializer
 import pika
-
+from .publisher import publish
 class OrderListView(generics.ListCreateAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
@@ -11,30 +11,25 @@ class OrderListView(generics.ListCreateAPIView):
     RABBITMQ_HOST = "localhost"
     
     def perform_create(self, serializer):
-        email = serializer.validated_data['user_email']
+        user = serializer.validated_data['user_email']  
+        product = serializer.validated_data['product_name'] 
+        try:
+            
+            user = User.objects.get(email=user.email)
+            
+            try:
+                product = Product.objects.get(product_id = product.product_id)
+                print(product," Product created") 
+            except Product.DoesNotExist:
+                raise serializers.ValidationError("Product does not exist")
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User email does not exist")
 
-        # Check if the email already exists in the User model
-        if not User.objects.filter(email=email).exists():
-            raise serializers.ValidationError("User with this email does not exist")
-
-        # If the email exists, save the order
+       
         serializer.save()
-
-    def check_user_exists(self, user_email):
-        # Connect to RabbitMQ to send a message for user existence check
-        connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-        channel = connection.channel()
-
-        # Declare the queue
-        channel.queue_declare(queue='user_check_queue')
-
-        # Send a message to the user check queue
-        channel.basic_publish(exchange='', routing_key='user_check_queue', body=str(user_id))
-
-        # Close the connection
-        connection.close()
-
-        return True 
+        publish("sent_email", serializer.data)
+        print("........................................................")
+        
 
 
 

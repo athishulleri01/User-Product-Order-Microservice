@@ -8,4 +8,4 @@ urlpatterns = [
     path('orders/<int:pk>/', OrderDetailView.as_view(), name='order-detail'),
 ]
 
-start_user_check_consumer()
+# start_user_check_consumer()
