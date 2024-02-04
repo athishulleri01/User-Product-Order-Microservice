@@ -1,27 +1,22 @@
-# # user_service/Dockerfile
-# FROM python:3.8
-
-# WORKDIR /app
-
-# # Copy the entire content of the user_service directory to the working directory
-# COPY ./email_service/ .
-
-
-# user_service/Dockerfile
-# email_service/Dockerfile
-# email_service/Dockerfile
 FROM python:3.8
+ENV PYTHONUNBUFFERED=1
 
-WORKDIR /app/email_service  # Set the working directory to the email_service directory
+RUN apt-get update && apt-get install -y libpq-dev gcc
 
+WORKDIR /email_service  
 # Copy the entire content of the email_service directory to the working directory
 COPY . .
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+COPY migrate.sh /email_service/migrate.sh
+COPY entrypoint.sh /email_service/entrypoint.sh
 
-# Expose the necessary port (if needed)
-# EXPOSE 8001
+RUN chmod +x /email_service/migrate.sh
+RUN chmod +x /email_service/entrypoint.sh
 
-# # Set the command to run your application
-# CMD ["python", "manage.py", "runserver", "0.0.0.0:8001"]
+COPY requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+
+# ENV DJANGO_SETTINGS_MODULE=email_service.settings
+
+# Run app.py when the container launches
+CMD ["sh", "./entrypoint.sh"]
