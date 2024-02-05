@@ -4,3 +4,4 @@ django-cors-headers
 celery
 pika
 psycopg2-binary
+gunicorn
